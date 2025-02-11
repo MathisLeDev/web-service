@@ -6,7 +6,7 @@ export class ArticleResolvers {
 
     constructor() {
     }
-    
+
     async getArticles() {
         return this._articleModel.getArticles();
     }
@@ -21,6 +21,10 @@ export class ArticleResolvers {
 
     async updateArticle({ article }: { id: number, article: ArticleDto }) {
         return this._articleModel.updateArticle(article);
+    }
+
+    async deleteArticle({ id }: { id: number }) {
+        return this._articleModel.deleteArticle(id);
     }
 }
 

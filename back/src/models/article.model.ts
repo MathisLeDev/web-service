@@ -1,5 +1,6 @@
 import {ArticleEntity} from "../entities/article.entity";
 import {ArticleDto} from "../dtos/article.dto";
+import {DeleteResult} from "typeorm";
 
 export class ArticleModel {
     constructor() {
@@ -13,7 +14,7 @@ export class ArticleModel {
         }
     }
 
-    async getArticlesById(id: number): Promise<ArticleEntity> {
+    async getArticlesById(id: number): Promise<ArticleEntity | null> {
         try {
             return await ArticleEntity.findOneBy({id}) ;
         } catch (error) {
@@ -47,4 +48,11 @@ export class ArticleModel {
         }
     }
 
+    async deleteArticle(id: number): Promise<DeleteResult | null> {
+        try {
+            return await ArticleEntity.delete(id);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

@@ -5,6 +5,7 @@ import {ArticleResolvers} from "./resolvers/article.resolver";
 import {WebServiceDataSource} from "./data_source/data_source";
 import {ArticleDto} from "./dtos/article.dto";
 const { ruruHTML } = require('ruru/server');
+import cors from 'cors';
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
     type Article {
@@ -21,6 +22,7 @@ const schema = buildSchema(`
     type Mutation {
         createArticle(article: ArticleDto): Article
         updateArticle(id: Int, article: ArticleDto): Article
+        deleteArticle(id: Int): Article
     }
 
     input ArticleDto {
@@ -48,8 +50,12 @@ const rootValue = {
     getArticleById: articleResolvers.getArticleById.bind(articleResolvers),
     createArticle: articleResolvers.createArticle.bind(articleResolvers),
     updateArticle: articleResolvers.updateArticle.bind(articleResolvers),
+    deleteArticle: articleResolvers.deleteArticle.bind(articleResolvers),
 };
 const app = express();
+
+app.use(cors());
+
 
 // Create and use the GraphQL handler.
 app.all(

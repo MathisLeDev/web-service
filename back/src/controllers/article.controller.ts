@@ -22,7 +22,7 @@ export class ArticleController {
                 response.status(400).json({message: "No id provided"});
             }
             console.log("debug", request.params.id);
-            const article = this._articleModel.getArticlesById(1);
+            const article = this._articleModel.getArticlesById(parseInt(request.params.id));
             if(!article){
                 response.status(404).json({message: "Article not found"});
             }
@@ -59,6 +59,21 @@ export class ArticleController {
                 response.status(400).json({message: "Article not updated"});
             }
             response.status(200).json(updatedArticle);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteArticle(request: Request, response: Response, next: NextFunction) {
+        try {
+            if (!request.params.id) {
+                response.status(400).json({message: "No id provided"});
+            }
+            const deletedArticle = this._articleModel.deleteArticle(parseInt(request.params.id));
+            if (!deletedArticle) {
+                response.status(400).json({message: "Article not deleted"});
+            }
+            response.status(200).json(deletedArticle);
         } catch (error) {
             next(error);
         }
