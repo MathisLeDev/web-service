@@ -6,12 +6,12 @@ services:
     env_file:
       - back/.env
     ports:
-      - "3001:3001"
+      - "4000:4000"
     develop:
       watch:
         - action: sync
-          path: ./src
-          target: /src
+          path: ./back/src
+          target: /app/src
           ignore:
             - node_modules/
 

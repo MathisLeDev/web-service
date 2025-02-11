@@ -7,7 +7,7 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-EXPOSE 3001
+EXPOSE 4000
 
 # Command to start the application
 CMD ["yarn", "dev"]
