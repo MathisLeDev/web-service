@@ -1,0 +1,35 @@
+services:
+  back:
+    build:
+      context: back/
+      dockerfile: Dockerfile
+    env_file:
+      - back/.env
+    ports:
+      - "3001:3001"
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /src
+          ignore:
+            - node_modules/
+
+  front:
+    build:
+      context: front/
+      dockerfile: Dockerfile.dev
+    ports:
+        - "3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./front/src
+          target: /app/src
+          ignore:
+            - node_modules/
+    networks:
+      - back
+networks:
+  back:
+    driver: bridge

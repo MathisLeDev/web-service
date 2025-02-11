@@ -1,0 +1,15 @@
+FROM node:23-alpine3.20 AS dev
+
+WORKDIR /app
+
+COPY package.json ./
+
+RUN yarn install
+
+COPY . .
+
+VOLUME [ "/app" ]
+
+EXPOSE 3000
+
+CMD ["yarn", "dev"]

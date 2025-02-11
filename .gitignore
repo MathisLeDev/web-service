@@ -1,0 +1,13 @@
+front/nodes-modules/
+front/.env/
+front/.idea/
+front/.yarn.lock/
+front/.package.lock/
+
+back/nodes-modules/
+back/.env/
+back/.idea/
+back/.yarn.lock/
+back/.package.lock/
+
+.idea/
