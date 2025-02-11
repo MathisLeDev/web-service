@@ -53,10 +53,59 @@ services:
     networks:
       - back
 
+  grafana:
+    image: grafana/grafana:11.5.1
+
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - database
+    networks:
+      - database-network
+      - prometheus-network
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:master
+    container_name: postgres_exporter
+    env_file:
+      - ./back/.env
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?sslmode=disable
+    networks:
+      - database-network
+      - postgres-exporter-network
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - database-network
+      - prometheus-network
+      - postgres-exporter-network
+
+
+
 volumes:
   database-data:
+  grafana-data:
+
 networks:
   back:
     driver: bridge
   database-network:
+    driver: bridge
+  prometheus-network:
+    driver: bridge
+  postgres-exporter-network:
     driver: bridge
