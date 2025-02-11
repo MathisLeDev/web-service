@@ -3,6 +3,7 @@ front/.env
 front/.idea/
 front/yarn.lock
 front/package-lock.json
+front/build/
 
 back/node_modules/
 back/.env
