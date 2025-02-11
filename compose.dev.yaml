@@ -1,10 +1,26 @@
 services:
+  database:
+    image: "postgres:17.1-alpine"
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    env_file:
+      - ./back/.env
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - database-network
+
   back:
     build:
       context: back/
       dockerfile: Dockerfile
     env_file:
-      - back/.env
+      - ./back/.env
     ports:
       - "4000:4000"
     develop:
@@ -14,6 +30,10 @@ services:
           target: /app/src
           ignore:
             - node_modules/
+    depends_on:
+      - database
+    networks:
+      - database-network
 
   front:
     build:
@@ -28,8 +48,15 @@ services:
           target: /app/src
           ignore:
             - node_modules/
+    depends_on:
+      - database
     networks:
       - back
+
+volumes:
+  database-data:
 networks:
   back:
+    driver: bridge
+  database-network:
     driver: bridge
