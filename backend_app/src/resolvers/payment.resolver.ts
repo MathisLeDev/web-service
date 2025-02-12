@@ -24,7 +24,7 @@ export class PurchaseResolvers {
         try {
             const connection = await amqp.connect("amqp://rabbitmq");
             const channel = await connection.createChannel();
-            const queue = "payments-request";
+            const queue = "Payments-request";
 
             await channel.assertQueue(queue, { durable: true });
             channel.sendToQueue(queue, Buffer.from(JSON.stringify(payment)), { persistent: true });
@@ -33,6 +33,14 @@ export class PurchaseResolvers {
 
             await channel.close();
             await connection.close();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getPayments() {
+        try {
+            return await this._paymentModel.getPayments();
         } catch (error) {
             throw error;
         }

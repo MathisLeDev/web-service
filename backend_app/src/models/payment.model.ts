@@ -20,4 +20,12 @@ export class PaymentModel {
             throw error;
         }
     }
+
+    async getPayments(): Promise<PaymentEntity[]> {
+        try {
+            return await PaymentEntity.find({relations: ["article"]});
+        } catch (error) {
+            throw error;
+        }
+    }
 }

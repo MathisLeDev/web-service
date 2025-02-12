@@ -1,5 +1,5 @@
 import React from 'react';
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {logout} from "../../services/Authentication/AuthenticationService";
 
 const Header = () => {
@@ -11,7 +11,10 @@ const Header = () => {
     }
     return (
         <div className="navbar bg-base-300 flex flex-row justify-between">
-            <a className="btn btn-ghost text-xl">Quotopia</a>
+            <a className="btn btn-ghost text-xl">Web service</a>
+            <Link to={"/payments"} className="btn btn-ghost text-xl ml-auto"><button className={'btn'}>
+                Payments
+            </button></Link>
 
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
@@ -30,9 +33,9 @@ const Header = () => {
                 </ul>
             </div>
 
-</div>
-)
-    ;
+        </div>
+    )
+        ;
 };
 
 export default Header;

@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import Root from "./pages/Root/Root";
 import {auth$} from "./services/Authentication/AuthenticationService";
+import Payment from "./pages/Payments/Payment";
 
 interface ProtectedRouteProps {
     isAuthenticated: boolean;
@@ -43,6 +44,11 @@ function App() {
             path: "/",
             element: <Root isAuthenticated={isAuthenticated} />,
         },
+        {
+            path: "/payments",
+            element: <Payment  />,
+        },
+
     ]);
 
     return <RouterProvider router={router} />;

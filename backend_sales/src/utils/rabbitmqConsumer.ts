@@ -1,11 +1,26 @@
 import amqp from "amqplib";
 
-const REQUEST_QUEUE = "payments-request";
-const CONFIRMATION_QUEUE = "payments-confirmations";
+const REQUEST_QUEUE = "Payments-request";
+const CONFIRMATION_QUEUE = "Payments-confirmations";
+const RABBITMQ_URL = "amqp://rabbitmq:5672";
+
+async function waitForRabbitMQ(retries = 5, delay = 5000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            console.log(`[RabbitMQ] Tentative de connexion... (${i + 1}/${retries})`);
+            const connection = await amqp.connect(RABBITMQ_URL);
+            return connection;
+        } catch (error) {
+            console.error(`[RabbitMQ] Connexion échouée, nouvelle tentative dans ${delay / 1000}s...`);
+            await new Promise((res) => setTimeout(res, delay));
+        }
+    }
+    throw new Error("Impossible de se connecter à RabbitMQ après plusieurs tentatives.");
+}
 
 async function consumePaymentsConfirmations() {
     try {
-        const connection = await amqp.connect("amqp://rabbitmq:5672");
+        const connection = await waitForRabbitMQ();
         const channel = await connection.createChannel();
 
         await channel.assertQueue(REQUEST_QUEUE, { durable: true });
@@ -22,20 +37,16 @@ async function consumePaymentsConfirmations() {
                 messageContent.status = "processed";
 
                 // Simuler le traitement
-                const confirmation = {
-                    payment: messageContent,
-                };
+                const confirmation = { payment: messageContent };
 
                 setTimeout(() => {
+                    channel.sendToQueue(
+                        CONFIRMATION_QUEUE,
+                        Buffer.from(JSON.stringify(confirmation)),
+                        { persistent: true }
+                    );
 
-                // Envoi de la confirmation
-                channel.sendToQueue(
-                    CONFIRMATION_QUEUE,
-                    Buffer.from(JSON.stringify(confirmation)),
-                    { persistent: true }
-                );
-
-                console.log(`✅ [RabbitMQ] Confirmation envoyée :`, confirmation);
+                    console.log(`✅ [RabbitMQ] Confirmation envoyée :`, confirmation);
                 }, 5000);
 
                 channel.ack(msg);

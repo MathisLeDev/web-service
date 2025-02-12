@@ -32,6 +32,7 @@ services:
             - node_modules/
     depends_on:
       - database
+      - rabbitmq
     networks:
       - database-network
       - rabbitmq-network
@@ -44,6 +45,8 @@ services:
       - backend_sales/.env
     ports:
       - "4002:4002"
+    depends_on:
+      - rabbitmq
     develop:
       watch:
         - action: sync
@@ -127,9 +130,6 @@ services:
       - backend_app-network
       - rabbitmq-network
       - backend_sales-network
-    depends_on:
-      - backend_app
-      - backend_sales
 
 
 
