@@ -6,12 +6,20 @@ import {WebServiceDataSource} from "./data_source/data_source";
 import {ArticleDto} from "./dtos/article.dto";
 const { ruruHTML } = require('ruru/server');
 import cors from 'cors';
+import {PurchaseResolvers} from "./resolvers/payment.resolver";
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
     type Article {
         id: Int
         title: String
         content: String
+    }
+    
+    type Payment {
+        id: Int
+        user_name: String
+        article_id: Int
+        status: String
     }
     
     type Query {
@@ -23,6 +31,7 @@ const schema = buildSchema(`
         createArticle(article: ArticleDto): Article
         updateArticle(id: Int, article: ArticleDto): Article
         deleteArticle(id: Int): Article
+        purchaseArticle(payment: PaymentDto): Payment
     }
 
     input ArticleDto {
@@ -30,6 +39,13 @@ const schema = buildSchema(`
         title: String
         content: String
     }
+    
+    input PaymentDto {
+        user_name: String
+        article_id: Int
+    }
+    
+    
 `);
 
 
@@ -43,6 +59,7 @@ WebServiceDataSource.initialize()
 
 
 const articleResolvers  = new ArticleResolvers()
+const purchaseResolvers = new PurchaseResolvers()
 
 // The rootValue provides a resolver function for each API endpoint
 const rootValue = {
@@ -51,6 +68,7 @@ const rootValue = {
     createArticle: articleResolvers.createArticle.bind(articleResolvers),
     updateArticle: articleResolvers.updateArticle.bind(articleResolvers),
     deleteArticle: articleResolvers.deleteArticle.bind(articleResolvers),
+    purchaseArticle: purchaseResolvers.purchaseArticle.bind(purchaseResolvers)
 };
 const app = express();
 

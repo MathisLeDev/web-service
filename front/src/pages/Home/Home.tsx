@@ -133,19 +133,52 @@ const Home = () => {
         }
     }
 
+    const handlePurchaseArticle  = async (article_id: string) => {
+        try {
+            const query = `
+                mutation purchaseArticle($payment: PaymentDto!) {
+                    purchaseArticle(payment: $payment) {
+                        id
+                        user_name
+                        article_id
+                        status
+                    }
+                }            
+            `;
+            const variables = {
+                payment: {
+                    user_name: "John Doe",
+                    article_id,
+                }
+            };
+            const res = await axiosInstance.post("", {query, variables});
+            if (res) {
+                const newArticles = await fetchArticles()
+                if (newArticles) {
+                    console.log(newArticles)
+                    setArticles(newArticles.getArticles);
+                }
+            }
+
+        } catch (e) {
+            console.error(e)
+        }
+
+    }
+
     return (
         <div className={'min-h-screen flex flex-col'}>
             <Header/>
             <div className={'p-5'}>
                 <h1 className="text-center text-5xl mt-10 pb-20">Articles</h1>
-                <ArticleComponent  handleDeleteArticle={handleDeleteArticle} handleSubmitArticle={handleSubmitArticle} handleUpdateArticle={handleUpdateArticle}/>
+                <ArticleComponent handlePurchaseArticle={()=>{}} handleDeleteArticle={handleDeleteArticle} handleSubmitArticle={handleSubmitArticle} handleUpdateArticle={handleUpdateArticle}/>
 
                 <h1 className="text-center text-5xl mt-20 py-10">Here's some recently added articles</h1>
 
                 <div className={'flex flex-col gap-4'}>
                     {isLoading && <span className={'loading loading-lg mx-auto'}/>}
                     {articles.length > 0 && articles.map((article, index) => (
-                        <ArticleComponent article={article} key={index} handleDeleteArticle={handleDeleteArticle} handleSubmitArticle={handleSubmitArticle} handleUpdateArticle={handleUpdateArticle}/>
+                        <ArticleComponent handlePurchaseArticle={handlePurchaseArticle} article={article} key={index} handleDeleteArticle={handleDeleteArticle} handleSubmitArticle={handleSubmitArticle} handleUpdateArticle={handleUpdateArticle}/>
                     ))}
                 </div>
             </div>

@@ -1,4 +1,5 @@
-import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {PaymentEntity} from "./payment.entity";
 
 @Entity()
 export class ArticleEntity extends BaseEntity {
@@ -10,4 +11,7 @@ export class ArticleEntity extends BaseEntity {
 
     @Column()
     content: string;
+
+    @OneToMany(() => PaymentEntity, (payment) => payment.article)
+    payments: PaymentEntity[]
 }
