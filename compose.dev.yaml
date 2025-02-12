@@ -105,6 +105,21 @@ services:
       - database-network
       - postgres-exporter-network
 
+  rabbitmq:
+    image: rabbitmq:4.1-rc-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_PROMETHEUS: "true"
+    networks:
+      - backend_app-network
+      - rabbitmq-network
+      - backend_sales-network
+
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: prometheus
@@ -116,22 +131,9 @@ services:
       - database-network
       - prometheus-network
       - postgres-exporter-network
-
-  rabbitmq:
-    image: rabbitmq:4.1-rc-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_PROMETHEUS: "true"
-    networks:
-      - backend_app-network
       - rabbitmq-network
-      - backend_sales-network
-
-
+    depends_on:
+      - rabbitmq
 
 volumes:
   database-data:

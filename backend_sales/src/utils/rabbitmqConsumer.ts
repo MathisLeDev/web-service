@@ -39,14 +39,17 @@ async function consumePaymentsConfirmations() {
                 // Simuler le traitement
                 const confirmation = { payment: messageContent };
 
-                for (let i = 0; i < 10000; i++) {
-                    const i = 10.235 * 10.235;
-                }
-                channel.sendToQueue(
-                    CONFIRMATION_QUEUE,
-                    Buffer.from(JSON.stringify(confirmation)),
-                    { persistent: true }
-                );
+                setTimeout(() => {
+                    for (let i = 0; i < 10000; i++) {
+                        const i = 10.235 * 10.235;
+                    }
+                    channel.sendToQueue(
+                        CONFIRMATION_QUEUE,
+                        Buffer.from(JSON.stringify(confirmation)),
+                        { persistent: true }
+                    );
+
+                },5000)
 
                 console.log(`✅ [RabbitMQ] Confirmation envoyée :`, confirmation);
 
