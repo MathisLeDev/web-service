@@ -11,10 +11,14 @@ const Header = () => {
     }
     return (
         <div className="navbar bg-base-300 flex flex-row justify-between">
-            <a className="btn btn-ghost text-xl">Web service</a>
-            <Link to={"/payments"} className="btn btn-ghost text-xl ml-auto"><button className={'btn'}>
-                Payments
-            </button></Link>
+            <Link to={"/"}>
+                <a className="btn btn-ghost text-xl">Web service</a>
+            </Link>
+            <Link to={"/payments"} className={'ml-auto'}>
+                <a className="btn btn-ghost text-xl">
+                        Payments
+                </a>
+                </Link>
 
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">

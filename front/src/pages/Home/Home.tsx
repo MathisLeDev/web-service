@@ -140,7 +140,6 @@ const Home = () => {
                     purchaseArticle(payment: $payment) {
                         id
                         user_name
-                        article_id
                         status
                     }
                 }            
