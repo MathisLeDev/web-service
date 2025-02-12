@@ -7,6 +7,7 @@ import {ArticleDto} from "./dtos/article.dto";
 const { ruruHTML } = require('ruru/server');
 import cors from 'cors';
 import {PurchaseResolvers} from "./resolvers/payment.resolver";
+import "./utils/rabbitmqConsumer";
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
     type Article {

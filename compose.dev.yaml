@@ -4,7 +4,7 @@ services:
     volumes:
       - database-data:/var/lib/postgresql/data
     env_file:
-      - ./back/.env
+      - backend_app/.env
     environment:
       POSTGRES_HOST: localhost
       POSTGRES_DB: ${DB_NAME}
@@ -15,18 +15,18 @@ services:
     networks:
       - database-network
 
-  back:
+  backend_app:
     build:
-      context: back/
+      context: backend_app/
       dockerfile: Dockerfile
     env_file:
-      - ./back/.env
+      - backend_app/.env
     ports:
       - "4000:4000"
     develop:
       watch:
         - action: sync
-          path: ./back/src
+          path: ./backend_app/src
           target: /app/src
           ignore:
             - node_modules/
@@ -34,6 +34,26 @@ services:
       - database
     networks:
       - database-network
+      - rabbitmq-network
+
+  backend_sales:
+    build:
+      context: backend_sales/
+      dockerfile: Dockerfile
+    env_file:
+      - backend_sales/.env
+    ports:
+      - "4002:4002"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend_sales/src
+          target: /app/src
+          ignore:
+            - node_modules/
+    networks:
+      - backend_sales-network
+      - rabbitmq-network
 
   front:
     build:
@@ -51,7 +71,7 @@ services:
     depends_on:
       - database
     networks:
-      - back
+      - backend_app-network
 
   grafana:
     image: grafana/grafana:11.5.1
@@ -73,7 +93,7 @@ services:
     image: prometheuscommunity/postgres-exporter:master
     container_name: postgres_exporter
     env_file:
-      - ./back/.env
+      - backend_app/.env
     ports:
       - "9187:9187"
     environment:
@@ -94,6 +114,23 @@ services:
       - prometheus-network
       - postgres-exporter-network
 
+  rabbitmq:
+    image: rabbitmq:4.1-rc-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_PROMETHEUS: "true"
+    networks:
+      - backend_app-network
+      - rabbitmq-network
+      - backend_sales-network
+    depends_on:
+      - backend_app
+      - backend_sales
+
 
 
 volumes:
@@ -101,7 +138,7 @@ volumes:
   grafana-data:
 
 networks:
-  back:
+  backend_app-network:
     driver: bridge
   database-network:
     driver: bridge
@@ -109,3 +146,8 @@ networks:
     driver: bridge
   postgres-exporter-network:
     driver: bridge
+  rabbitmq-network:
+    driver: bridge
+  backend_sales-network:
+    driver: bridge
+

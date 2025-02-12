@@ -27,7 +27,7 @@ Customise the values in the .env file (optional)
 
 ## Stress test
 ```bash
-  cd back
+  cd backend_app
 ```
 ```bash
 npx artillery run .\stress-test.yml

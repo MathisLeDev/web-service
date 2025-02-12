@@ -5,10 +5,18 @@ front/yarn.lock
 front/package-lock.json
 front/build/
 
-back/node_modules/
-back/.env
-back/.idea/
-back/yarn.lock
-back/package-lock.json
+backend_app/node_modules/
+backend_app/.env
+backend_app/.idea/
+backend_app/yarn.lock
+backend_app/package-lock.json
 
+
+backend_sales/node_modules/
+backend_sales/.env
+backend_sales/.idea/
+backend_sales/yarn.lock
+backend_sales/package-lock.json
+
+.env
 .idea/

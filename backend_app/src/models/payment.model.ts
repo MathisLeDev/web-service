@@ -7,8 +7,15 @@ export class PaymentModel {
 
     async createPayment(payment: PaymentDto) {
         try {
-            console.log("debug", payment);
             return PaymentEntity.create({user_name: payment.user_name, article:{id:payment.article_id}}).save();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updatePayment(payment: PaymentEntity) {
+        try {
+            return PaymentEntity.update(payment.id, {status: payment.status});
         } catch (error) {
             throw error;
         }
