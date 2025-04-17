@@ -10,23 +10,9 @@ const Payment = () => {
         const fetchPayments = async () => {
             try {
                 setIsLoading(true);
-                const query = `
-                    query {
-                        getPayments {
-                            id
-                            user_name
-                            article {
-                              id
-                              title
-                              content
-                            }
-                            status
-                        }
-                    }
-                `;
-                const response = await axiosInstance.post("", {query});
-                setPayments(response.data.data.getPayments);
-                console.log(response.data.data.getPayments)
+                const response = await axiosInstance.get("/purchases");
+                console.log(response.data)
+                setPayments(response.data);
                 setIsLoading(false);
             } catch (error) {
                 console.error("Error fetching payments:", error);

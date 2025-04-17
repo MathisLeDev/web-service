@@ -6,32 +6,17 @@ import Header from "../../components/Header/Header";
 
 const Home = () => {
     const [articles, setArticles] = React.useState<ArticleType[]>([]);
-    const [titleInput, setTitleInput] = React.useState<string>("");
-    const [contentInput, setContentInput] = React.useState<string>("");
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
-
     const fetchArticles = async (page?: number) => {
-        const response = await axiosInstance.post('', {
-            query: `
-        query {
-          getArticles {
-            id
-            title
-            content
-          }
-        }
-      `
-        });
-        return response.data.data;
-
+        const response = await axiosInstance.get('/products')
+        return response.data;
     }
 
     useEffect(() => {
         setIsLoading(true);
         fetchArticles().then((response) => {
-            setArticles(response.getArticles);
-            console.log(response.getArticles);
+            setArticles(response);
         }).catch((error) => {
 
         }).finally(() => {
@@ -40,31 +25,16 @@ const Home = () => {
     }, []);
 
     const handleSubmitArticle = async ({title, content}: {title:string, content:string}) => {
-        if (!title || !content) {
-            return;
-        }
         try {
-            const query = `
-                mutation createArticle($title: String!, $content: String!) {
-                    createArticle(article: {  title: $title, content: $content }) {
-                        id
-                        title
-                        content
-                    }
-                }
-            `;
-
-            const variables = {
-                title: title,
-                content: content
-            };
-
-            const res = await axiosInstance.post("", {query, variables });
+            const body = {
+                title,
+                content,
+            }
+            const res = await axiosInstance.post("/products", body);
             if(res) {
                 const newArticles = await fetchArticles()
                 if(newArticles) {
-                    console.log(newArticles )
-                    setArticles(newArticles.getArticles);
+                    setArticles(newArticles);
                 }
             }
         } catch (e) {
@@ -73,89 +43,46 @@ const Home = () => {
 
 
     const handleUpdateArticle = async (article: ArticleType) => {
-        if (!article.title || !article.content) {
-            return;
-        }
         try {
-            const query = `
-                mutation updateArticle($id: Int!, $title: String!, $content: String!) {
-                    createArticle(article: { id: $id, title: $title, content: $content }) {
-                        id
-                        title
-                        content
-                    }
-                }
-            `;
-
-            const variables = {
-                id: article.id,
-                title: article.title,
-                content: article.content
-            };
-
-            await axiosInstance.post("", {query, variables });
-            const res = await axiosInstance.post("", {query, variables });
-            if(res) {
+            const body ={
+                title: article.title
+            }
+            const res = await axiosInstance.put(`/products/${article.id}`, body)
+            if (res) {
                 const newArticles = await fetchArticles()
-                if(newArticles) {
-                    console.log(newArticles )
-                    setArticles(newArticles.getArticles);
+                if (newArticles) {
+                    setArticles(newArticles);
                 }
             }
         } catch (e) {
+            console.error(e)
         }
     }
 
     const handleDeleteArticle = async (id: string) => {
         try {
-            const query = `
-                mutation deleteArticle($id: Int!) {
-                    deleteArticle(id: $id) {
-                        id
-                    }
-                }
-            `;
-
-            const variables = {
-                id,
-            };
-
-            await axiosInstance.post("", {query, variables});
-            const res = await axiosInstance.post("", {query, variables });
-            if(res) {
+            const res = await axiosInstance.delete(`/products/${id}`)
+            if (res) {
                 const newArticles = await fetchArticles()
-                if(newArticles) {
-                    console.log(newArticles )
-                    setArticles(newArticles.getArticles);
+                if (newArticles) {
+                    setArticles(newArticles);
                 }
             }
         } catch (e) {
+            console.error(e)
         }
     }
 
     const handlePurchaseArticle  = async (article_id: string) => {
         try {
-            const query = `
-                mutation purchaseArticle($payment: PaymentDto!) {
-                    purchaseArticle(payment: $payment) {
-                        id
-                        user_name
-                        status
-                    }
-                }            
-            `;
-            const variables = {
-                payment: {
-                    user_name: "John Doe",
-                    article_id,
-                }
-            };
-            const res = await axiosInstance.post("", {query, variables});
+            const body = {
+                id: article_id
+            }
+            const res = await axiosInstance.post("/purchases", body)
             if (res) {
                 const newArticles = await fetchArticles()
                 if (newArticles) {
-                    console.log(newArticles)
-                    setArticles(newArticles.getArticles);
+                    setArticles(newArticles);
                 }
             }
 

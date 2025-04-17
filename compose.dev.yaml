@@ -1,155 +1,85 @@
-services:
-  database:
-    image: "postgres:17.1-alpine"
-    volumes:
-      - database-data:/var/lib/postgresql/data
-    env_file:
-      - backend_app/.env
-    environment:
-      POSTGRES_HOST: localhost
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    networks:
-      - database-network
-
-  backend_app:
-    build:
-      context: backend_app/
-      dockerfile: Dockerfile
-    env_file:
-      - backend_app/.env
-    ports:
-      - "4000:4000"
-    develop:
-      watch:
-        - action: sync
-          path: ./backend_app/src
-          target: /app/src
-          ignore:
-            - node_modules/
-    depends_on:
-      - database
-      - rabbitmq
-    networks:
-      - database-network
-      - rabbitmq-network
-
-  backend_sales:
-    build:
-      context: backend_sales/
-      dockerfile: Dockerfile
-    env_file:
-      - backend_sales/.env
-    ports:
-      - "4002:4002"
-    depends_on:
-      - rabbitmq
-    develop:
-      watch:
-        - action: sync
-          path: ./backend_sales/src
-          target: /app/src
-          ignore:
-            - node_modules/
-    networks:
-      - backend_sales-network
-      - rabbitmq-network
-
-  front:
-    build:
-      context: front/
-      dockerfile: Dockerfile.dev
-    ports:
-        - "3000:3000"
-    develop:
-      watch:
-        - action: sync
-          path: ./front/src
-          target: /app/src
-          ignore:
-            - node_modules/
-    depends_on:
-      - database
-    networks:
-      - backend_app-network
-
-  grafana:
-    image: grafana/grafana:11.5.1
-
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana-data:/var/lib/grafana
-    depends_on:
-      - database
-    networks:
-      - database-network
-      - prometheus-network
-
-  postgres_exporter:
-    image: prometheuscommunity/postgres-exporter:master
-    container_name: postgres_exporter
-    env_file:
-      - backend_app/.env
-    ports:
-      - "9187:9187"
-    environment:
-      - DATA_SOURCE_NAME=postgresql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?sslmode=disable
-    networks:
-      - database-network
-      - postgres-exporter-network
-
-  rabbitmq:
-    image: rabbitmq:4.1-rc-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-      - "15692:15692"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_PROMETHEUS: "true"
-    networks:
-      - backend_app-network
-      - rabbitmq-network
-      - backend_sales-network
-
-  prometheus:
-    image: prom/prometheus:v3.1.0
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - database-network
-      - prometheus-network
-      - postgres-exporter-network
-      - rabbitmq-network
-    depends_on:
-      - rabbitmq
-
-volumes:
-  database-data:
-  grafana-data:
+version: '3'
 
 networks:
-  backend_app-network:
-    driver: bridge
-  database-network:
-    driver: bridge
-  prometheus-network:
-    driver: bridge
-  postgres-exporter-network:
-    driver: bridge
-  rabbitmq-network:
-    driver: bridge
-  backend_sales-network:
-    driver: bridge
+  kong-net:
 
+services:
+  kong-migrations:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations bootstrap
+    depends_on:
+      - db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+    links:
+      - db:db
+    networks:
+      - kong-net
+    restart: on-failure
+
+  konga:
+    image: pantsel/konga
+    container_name: konga
+    depends_on:
+      - kong
+    environment:
+      NODE_ENV: production
+    links:
+      - kong:kong
+    networks:
+      - kong-net
+    ports:
+      - "1337:1337/tcp"
+    restart: on-failure
+    volumes:
+      - ./kongadata:/app/kongadata
+
+  kong:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    container_name: kong
+    user: "${KONG_USER:-root}"
+    depends_on:
+      - db
+    environment:
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: '0.0.0.0:8001'
+      KONG_CASSANDRA_CONTACT_POINTS: db
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+    networks:
+      - kong-net
+    ports:
+      - "8000:8000/tcp"
+      - "8001:8001/tcp"
+      - "8443:8443/tcp"
+      - "8444:8444/tcp"
+    restart: on-failure
+
+  db:
+    image: postgres:9.5
+    environment:
+      POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
+      POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-kong}
+      POSTGRES_USER: ${KONG_PG_USER:-kong}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${KONG_PG_USER:-kong}"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    stdin_open: true
+    tty: true
+    networks:
+      - kong-net
+    volumes:
+      - ./dbdata:/var/lib/postgresql/data
